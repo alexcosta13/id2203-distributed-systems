@@ -73,7 +73,7 @@ The number can be changed in the configuration file (cf. [Kompics docs](http://k
 To start a client (after the cluster is properly running) execute:
 
 ```
-java -jar client/target/scala-2.12/client.jar -p 56787 -b <bsip>:<bsport>
+java -jar client/target/scala-2.12/client.jar -p 56787 -s <bsip>:<bsport>
 ```
 
 Again, make sure not to double allocate ports on the same machine.
