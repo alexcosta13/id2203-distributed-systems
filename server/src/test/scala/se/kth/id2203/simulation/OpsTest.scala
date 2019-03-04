@@ -33,6 +33,7 @@ import se.sics.kompics.sl.simulator._;
 import se.sics.kompics.simulator.{ SimulationScenario => JSimulationScenario }
 import se.sics.kompics.simulator.run.LauncherComp
 import se.sics.kompics.simulator.result.SimulationResultSingleton;
+import se.sics.kompics.simulator.network.impl.NetworkModels
 import scala.concurrent.duration._
 
 class OpsTest extends FlatSpec with Matchers {
@@ -94,6 +95,8 @@ object SimpleScenario {
 
   private def isBootstrap(self: Int): Boolean = self == 1;
 
+  val setUniformLatencyNetwork = () => Op.apply((_: Unit) => ChangeNetwork(NetworkModels.withUniformRandomDelay(3, 7)));
+
   val startServerOp = Op { (self: Integer) =>
 
     val selfAddr = intToServerAddress(self)
@@ -118,10 +121,12 @@ object SimpleScenario {
 
   def scenario(servers: Int): JSimulationScenario = {
 
+    val networkSetup = raise(1, setUniformLatencyNetwork()).arrival(constant(0));
     val startCluster = raise(servers, startServerOp, 1.toN).arrival(constant(1.second));
     val startClients = raise(1, startClientOp, 1.toN).arrival(constant(1.second));
 
-    startCluster andThen
+    networkSetup andThen
+      0.seconds afterTermination startCluster andThen
       10.seconds afterTermination startClients andThen
       100.seconds afterTermination Terminate
   }

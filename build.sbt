@@ -1,6 +1,6 @@
 name := "project18"
 organization in ThisBuild := "se.kth.id2203"
-version in ThisBuild := "1.0-SNAPSHOT"
+version in ThisBuild := "1.2-SNAPSHOT"
 scalaVersion in ThisBuild := "2.12.8"
 
 // PROJECTS
