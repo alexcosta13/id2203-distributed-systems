@@ -112,6 +112,7 @@ lazy val compilerOptions = Seq(
 lazy val settings = Seq(
   scalacOptions ++= compilerOptions,
   resolvers ++= Seq(
+    "Kompics Releases" at "http://kompics.sics.se/maven/repository/",
     Resolver.jcenterRepo,
     Resolver.bintrayRepo("kompics", "Maven"),
     Resolver.mavenLocal
