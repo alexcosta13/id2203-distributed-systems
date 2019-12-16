@@ -41,9 +41,8 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
   val server = opt[NetAddress](descr = "Run in client mode and connect to bootstrap server in <arg> (ip:port)");
   val ip = opt[InetAddress](descr = "Change local ip to <arg> (default from config file)");
-  val port = opt[Int](
-    validate = (i => (0 < i) && (i < 65535)),
-    descr = "Change local port to <arg> (default from config file)");
+  val port =
+    opt[Int](validate = (i => (0 < i) && (i < 65535)), descr = "Change local port to <arg> (default from config file)");
   verify()
 }
 

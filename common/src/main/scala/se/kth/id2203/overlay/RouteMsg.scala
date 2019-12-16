@@ -27,5 +27,5 @@ package se.kth.id2203.overlay
 import java.util.UUID;
 import se.sics.kompics.KompicsEvent;
 
-@SerialVersionUID(0x9adf776105fc13f6L)
+@SerialVersionUID(-7286974413466233866L)
 case class RouteMsg(key: String, msg: KompicsEvent) extends KompicsEvent with Serializable;

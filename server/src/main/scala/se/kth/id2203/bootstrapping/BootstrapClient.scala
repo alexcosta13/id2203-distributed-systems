@@ -58,7 +58,7 @@ class BootstrapClient extends ComponentDefinition {
       val timeout: Long = cfg.getValue[Long]("id2203.project.keepAlivePeriod");
       val spt = new SchedulePeriodicTimeout(timeout, timeout);
       spt.setTimeoutEvent(BSTimeout(spt));
-      trigger (spt -> timer);
+      trigger(spt -> timer);
       timeoutId = Some(spt.getTimeoutEvent().getTimeoutId());
     }
   }

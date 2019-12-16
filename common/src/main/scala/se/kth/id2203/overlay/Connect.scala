@@ -27,10 +27,10 @@ package se.kth.id2203.overlay
 import java.util.UUID;
 import se.sics.kompics.KompicsEvent;
 
-@SerialVersionUID(0x8621b49163f9b6b4L)
+@SerialVersionUID(-8781539261855189324L)
 case class ConnectAck(id: UUID, clusterSize: Int) extends KompicsEvent with Serializable;
 
-@SerialVersionUID(0x2f2e7f2eef33e4bcL)
+@SerialVersionUID(3399794608269681852L)
 case class Connect(id: UUID) extends KompicsEvent with Serializable {
   def ack(clusterSize: Int): ConnectAck = ConnectAck(id, clusterSize);
 }
