@@ -53,7 +53,7 @@ class BootstrapClient extends ComponentDefinition {
 
   //******* Handlers ******
   ctrl uponEvent {
-    case _: Start => handle {
+    case _: Start => {
       log.debug("Starting bootstrap client on {}", self);
       val timeout: Long = cfg.getValue[Long]("id2203.project.keepAlivePeriod");
       val spt = new SchedulePeriodicTimeout(timeout, timeout);
@@ -64,7 +64,7 @@ class BootstrapClient extends ComponentDefinition {
   }
 
   timer uponEvent {
-    case BSTimeout(_) => handle {
+    case BSTimeout(_) => {
       state match {
         case Waiting => {
           trigger(NetMessage(self, server, CheckIn) -> net);
@@ -78,7 +78,7 @@ class BootstrapClient extends ComponentDefinition {
   }
 
   net uponEvent {
-    case NetMessage(header, Boot(assignment)) => handle {
+    case NetMessage(header, Boot(assignment)) => {
       state match {
         case Waiting => {
           log.info("{} Booting up.", self);

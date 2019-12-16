@@ -52,20 +52,20 @@ class VSOverlayManager extends ComponentDefinition {
   private var lut: Option[LookupTable] = None;
   //******* Handlers ******
   boot uponEvent {
-    case GetInitialAssignments(nodes) => handle {
+    case GetInitialAssignments(nodes) => {
       log.info("Generating LookupTable...");
       val lut = LookupTable.generate(nodes);
       logger.debug("Generated assignments:\n$lut");
       trigger (new InitialAssignments(lut) -> boot);
     }
-    case Booted(assignment: LookupTable) => handle {
+    case Booted(assignment: LookupTable) => {
       log.info("Got NodeAssignment, overlay ready.");
       lut = Some(assignment);
     }
   }
 
   net uponEvent {
-    case NetMessage(header, RouteMsg(key, msg)) => handle {
+    case NetMessage(header, RouteMsg(key, msg)) => {
       val nodes = lut.get.lookup(key);
       assert(!nodes.isEmpty);
       val i = Random.nextInt(nodes.size);
@@ -73,7 +73,7 @@ class VSOverlayManager extends ComponentDefinition {
       log.info(s"Forwarding message for key $key to $target");
       trigger(NetMessage(header.src, target, msg) -> net);
     }
-    case NetMessage(header, msg: Connect) => handle {
+    case NetMessage(header, msg: Connect) => {
       lut match {
         case Some(l) => {
           log.debug("Accepting connection request from ${header.src}");
@@ -86,7 +86,7 @@ class VSOverlayManager extends ComponentDefinition {
   }
 
   route uponEvent {
-    case RouteMsg(key, msg) => handle {
+    case RouteMsg(key, msg) => {
       val nodes = lut.get.lookup(key);
       assert(!nodes.isEmpty);
       val i = Random.nextInt(nodes.size);

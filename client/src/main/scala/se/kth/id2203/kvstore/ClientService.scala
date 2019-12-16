@@ -51,7 +51,7 @@ class ClientService extends ComponentDefinition {
 
   //******* Handlers ******
   ctrl uponEvent {
-    case _: Start => handle {
+    case _: Start => {
       log.debug(s"Starting client on $self. Waiting to connect...");
       val timeout: Long = (cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2l);
       val st = new ScheduleTimeout(timeout);
@@ -64,7 +64,7 @@ class ClientService extends ComponentDefinition {
   }
 
   net uponEvent {
-    case NetMessage(header, ack @ ConnectAck(id, clusterSize)) => handle {
+    case NetMessage(header, ack @ ConnectAck(id, clusterSize)) => {
       log.info(s"Client connected to $server, cluster size is $clusterSize");
       if (id != timeoutId.get) {
         log.error("Received wrong response id! System may be inconsistent. Shutting down...");
@@ -75,7 +75,7 @@ class ClientService extends ComponentDefinition {
       val tc = new Thread(c);
       tc.start();
     }
-    case NetMessage(header, or @ OpResponse(id, status)) => handle {
+    case NetMessage(header, or @ OpResponse(id, status)) => {
       log.debug(s"Got OpResponse: $or");
       pending.remove(id) match {
         case Some(promise) => promise.success(or);
@@ -85,7 +85,7 @@ class ClientService extends ComponentDefinition {
   }
 
   timer uponEvent {
-    case ConnectTimeout(_) => handle {
+    case ConnectTimeout(_) => {
       connected match {
         case Some(ack) => // already connected
         case None => {
@@ -97,7 +97,7 @@ class ClientService extends ComponentDefinition {
   }
 
   loopbck uponEvent {
-    case OpWithPromise(op, promise) => handle {
+    case OpWithPromise(op, promise) => {
       val rm = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
       trigger(NetMessage(self, server, rm) -> net);
       pending += (op.id -> promise);

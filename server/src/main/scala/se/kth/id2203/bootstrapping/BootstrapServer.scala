@@ -56,7 +56,7 @@ class BootstrapServer extends ComponentDefinition {
   private var initialAssignment: Option[NodeAssignment] = None;
   //******* Handlers ******
   ctrl uponEvent {
-    case _: Start => handle {
+    case _: Start => {
       log.info("Starting bootstrap server on {}, waiting for {} nodes...", self, bootThreshold);
       val timeout: Long = (cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2l);
       val spt = new SchedulePeriodicTimeout(timeout, timeout);
@@ -68,7 +68,7 @@ class BootstrapServer extends ComponentDefinition {
   }
 
   timer uponEvent {
-    case BSTimeout(_) => handle {
+    case BSTimeout(_) => {
       state match {
         case Collecting => {
           log.info("{} hosts in active set.", active.size);
@@ -100,7 +100,7 @@ class BootstrapServer extends ComponentDefinition {
   }
 
   boot uponEvent {
-    case InitialAssignments(assignment) => handle {
+    case InitialAssignments(assignment) => {
       initialAssignment = Some(assignment);
       log.info("Seeding assignments...");
       active foreach { node =>
@@ -111,10 +111,10 @@ class BootstrapServer extends ComponentDefinition {
   }
 
   net uponEvent {
-    case NetMessage(header, CheckIn) => handle {
+    case NetMessage(header, CheckIn) => {
       active += header.src;
     }
-    case NetMessage(header, Ready) => handle {
+    case NetMessage(header, Ready) => {
       ready += header.src;
     }
   }

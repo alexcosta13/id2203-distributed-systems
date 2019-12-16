@@ -1,4 +1,4 @@
-# ID2203 Project 2018 Starter Code for Kompics Scala
+# ID2203 Project 2020 Starter Code for Kompics Scala
 
 This project contains some code to get you started with the project.
 You are encouraged to create your own forks and work on them, modifying everything and anything as you desire it.
@@ -67,7 +67,7 @@ This will start the bootstrap server on localhost:45679, and ask it to connect t
 Make sure you start every node on a different port if they are all running directly on the local machine.
 
 By default you need 3 nodes (including the bootstrap server), before the system will actually generate a lookup table and allow you to interact with it.
-The number can be changed in the configuration file (cf. [Kompics docs](http://kompics.sics.se/current/tutorial/networking/basic/basic.html#cleanup-config-files-classmatchers-and-assembly) for background on Kompics configurations).
+The number can be changed in the configuration file (cf. [Kompics docs](http://kompics.github.io/current/tutorial/networking/basic/basic.html#cleanup-config-files-classmatchers-and-assembly) for background on Kompics configurations).
 
 #### Clients
 To start a client (after the cluster is properly running) execute:
@@ -83,4 +83,4 @@ The client will attempt to contact the bootstrap server and give you a small com
 ## Issues
 If you find a bug please create an issue on git, or create a pull request with a fix.
 
-If there are other questions, try to talk to the other students (e.g., in Canvas forums) and only if that doesn't help write me an email at <lkroll@kth.se>. Or, of course, ask at a lab session.
+If there are other questions, try to talk to the other students (e.g., in Canvas forums) and only if that doesn't help write me an email at <mmeldrum@kth.se>. Or, of course, ask at a lab session.

@@ -45,7 +45,7 @@ class ScenarioClient extends ComponentDefinition {
   private val pending = mutable.Map.empty[UUID, String];
   //******* Handlers ******
   ctrl uponEvent {
-    case _: Start => handle {
+    case _: Start => {
       val messages = SimulationResult[Int]("messages");
       for (i <- 0 to messages) {
         val op = new Op(s"test$i");
@@ -59,7 +59,7 @@ class ScenarioClient extends ComponentDefinition {
   }
 
   net uponEvent {
-    case NetMessage(header, or @ OpResponse(id, status)) => handle {
+    case NetMessage(header, or @ OpResponse(id, status)) => {
       logger.debug(s"Got OpResponse: $or");
       pending.remove(id) match {
         case Some(key) => SimulationResult += (key -> status.toString());
