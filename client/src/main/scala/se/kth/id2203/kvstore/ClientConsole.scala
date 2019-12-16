@@ -27,7 +27,7 @@ import com.larskroll.common.repl._
 import com.typesafe.scalalogging.StrictLogging;
 import org.apache.log4j.Layout
 import util.log4j.ColoredPatternLayout;
-import fastparse._
+import fastparse._, NoWhitespace._
 import concurrent.Await
 import concurrent.duration._
 
@@ -45,7 +45,11 @@ class ClientConsole(val service: ClientService) extends CommandConsole with Pars
   override def layout: Layout = colouredLayout;
   override def onInterrupt(): Unit = exit();
 
-  val opCommand = parsed(P("op" ~ " " ~ simpleStr), usage = "op <key>", descr = "Executes an op for <key>.") { key =>
+  val opParser = new ParsingObject[String] {
+    override def parseOperation[_: P]: P[String] = P("op" ~ " " ~ simpleStr.!);
+  }
+
+  val opCommand = parsed(opParser, usage = "op <key>", descr = "Executes an op for <key>.") { key =>
     println(s"Op with $key");
 
     val fr = service.op(key);

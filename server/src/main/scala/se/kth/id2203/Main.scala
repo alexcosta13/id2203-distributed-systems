@@ -52,7 +52,7 @@ object Main {
   Serializers.register(classOf[Serializable], "javaS");
 
   def main(args: Array[String]): Unit = {
-    val conf = new Conf(args);
+    val conf = new Conf(args.toSeq);
     // avoid constant conversion of the address by converting once and reassigning
     // sorry Java API  only :(
     val c = Kompics.getConfig().asInstanceOf[Config.Impl];
