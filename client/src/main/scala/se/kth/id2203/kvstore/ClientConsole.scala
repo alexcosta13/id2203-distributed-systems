@@ -27,14 +27,16 @@ import com.larskroll.common.repl._
 import com.typesafe.scalalogging.StrictLogging;
 import org.apache.log4j.Layout
 import util.log4j.ColoredPatternLayout;
-import fastparse.all._
+import fastparse._
 import concurrent.Await
 import concurrent.duration._
 
 object ClientConsole {
-  // Better build this statically. Has some overhead (building a lookup table).
-  val simpleStr = P(CharsWhileIn(('0' to '9') ++ ('a' to 'z') ++ ('A' to 'Z'), 1).!);
-  val colouredLayout = new ColoredPatternLayout("%d{[HH:mm:ss,SSS]} %-5p {%c{1}} %m%n");
+  def lowercase[_: P]  = P( CharIn("a-z") )
+  def uppercase[_: P]  = P( CharIn("A-Z") )
+  def digit[_: P]      = P( CharIn("0-9") )
+  def simpleStr[_: P]  = P( lowercase | uppercase | digit)
+  val colouredLayout   = new ColoredPatternLayout("%d{[HH:mm:ss,SSS]} %-5p {%c{1}} %m%n");
 }
 
 class ClientConsole(val service: ClientService) extends CommandConsole with ParsedCommands with StrictLogging {
