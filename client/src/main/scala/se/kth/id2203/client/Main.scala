@@ -32,7 +32,7 @@ import se.sics.kompics.Kompics;
 import se.sics.kompics.config._;
 import se.sics.kompics.network.netty.serialization.Serializers;
 import org.rogach.scallop._
-import org.apache.log4j.{ LogManager, Layout, PatternLayout, WriterAppender };
+import org.apache.log4j.{Layout, LogManager, PatternLayout, WriterAppender};
 
 class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
   import ScallopConverters._;
@@ -43,9 +43,8 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
   val server = opt[NetAddress](descr = "Set Bootstrap server to <arg> (ip:port)");
   val ip = opt[InetAddress](descr = "Change local ip to <arg> (default from config file)");
-  val port = opt[Int](
-    validate = (i => (0 < i) && (i < 65535)),
-    descr = "Change local port to <arg> (default from config file)");
+  val port =
+    opt[Int](validate = (i => (0 < i) && (i < 65535)), descr = "Change local port to <arg> (default from config file)");
   verify()
 }
 
@@ -55,7 +54,7 @@ object Main {
   Serializers.register(classOf[Serializable], "javaS");
 
   def main(args: Array[String]): Unit = {
-    val conf = new Conf(args);
+    val conf = new Conf(args.toSeq);
     // avoid constant conversion of the address by converting once and reassigning
     // sorry Java API  only :(
     val c = Kompics.getConfig().asInstanceOf[Config.Impl];

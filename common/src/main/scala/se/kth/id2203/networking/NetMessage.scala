@@ -25,7 +25,7 @@ package se.kth.id2203.networking
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import se.sics.kompics.network.{ Address, Header, Msg, Transport };
+import se.sics.kompics.network.{Address, Header, Msg, Transport};
 import se.sics.kompics.KompicsEvent;
 
 object NetAddress {
@@ -35,7 +35,7 @@ object NetAddress {
   }
 }
 
-@SerialVersionUID(0x07d715483507e3f1L)
+@SerialVersionUID(564943678129824753L)
 final case class NetAddress(isa: InetSocketAddress) extends Address with Serializable {
   override def asSocket(): InetSocketAddress = isa;
   override def getIp(): InetAddress = isa.getAddress;
@@ -45,15 +45,19 @@ final case class NetAddress(isa: InetSocketAddress) extends Address with Seriali
   }
 }
 
-@SerialVersionUID(0x6370ad801a3ed0c7L)
-final case class NetHeader(src: NetAddress, dst: NetAddress, proto: Transport) extends Header[NetAddress] with Serializable {
+@SerialVersionUID(7165417772854202567L)
+final case class NetHeader(src: NetAddress, dst: NetAddress, proto: Transport)
+    extends Header[NetAddress]
+    with Serializable {
   override def getDestination(): NetAddress = dst;
   override def getProtocol(): Transport = proto;
   override def getSource(): NetAddress = src;
 }
 
-@SerialVersionUID(0x5c49aa68999b9d1dL)
-final case class NetMessage[C <: KompicsEvent](header: NetHeader, payload: C) extends Msg[NetAddress, NetHeader] with Serializable {
+@SerialVersionUID(6650033691019681053L)
+final case class NetMessage[C <: KompicsEvent](header: NetHeader, payload: C)
+    extends Msg[NetAddress, NetHeader]
+    with Serializable {
   override def getDestination(): NetAddress = header.dst;
   override def getHeader(): NetHeader = header;
   override def getProtocol(): Transport = header.proto;
@@ -61,7 +65,9 @@ final case class NetMessage[C <: KompicsEvent](header: NetHeader, payload: C) ex
 }
 
 object NetMessage {
-  def apply[C <: KompicsEvent](src: NetAddress, dst: NetAddress, payload: C): NetMessage[C] = NetMessage(NetHeader(src, dst, Transport.TCP), payload);
-  def apply[C <: KompicsEvent](src: NetAddress, dst: NetAddress, proto: Transport, payload: C): NetMessage[C] = NetMessage(NetHeader(src, dst, proto), payload);
+  def apply[C <: KompicsEvent](src: NetAddress, dst: NetAddress, payload: C): NetMessage[C] =
+    NetMessage(NetHeader(src, dst, Transport.TCP), payload);
+  def apply[C <: KompicsEvent](src: NetAddress, dst: NetAddress, proto: Transport, payload: C): NetMessage[C] =
+    NetMessage(NetHeader(src, dst, proto), payload);
 
 }

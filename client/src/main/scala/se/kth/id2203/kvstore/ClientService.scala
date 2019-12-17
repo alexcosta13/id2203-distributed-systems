@@ -28,11 +28,11 @@ import se.kth.id2203.networking._;
 
 import se.kth.id2203.overlay._;
 import se.sics.kompics.sl._;
-import se.sics.kompics.{ Start, Kompics, KompicsEvent };
+import se.sics.kompics.{Kompics, KompicsEvent, Start};
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer._;
 import collection.mutable;
-import concurrent.{ Promise, Future };
+import concurrent.{Future, Promise};
 
 case class ConnectTimeout(spt: ScheduleTimeout) extends Timeout(spt);
 case class OpWithPromise(op: Operation, promise: Promise[OpResponse] = Promise()) extends KompicsEvent;
@@ -53,10 +53,10 @@ class ClientService extends ComponentDefinition {
   ctrl uponEvent {
     case _: Start => {
       log.debug(s"Starting client on $self. Waiting to connect...");
-      val timeout: Long = (cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2l);
+      val timeout: Long = (cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2L);
       val st = new ScheduleTimeout(timeout);
       st.setTimeoutEvent(ConnectTimeout(st));
-      trigger (st -> timer);
+      trigger(st -> timer);
       timeoutId = Some(st.getTimeoutEvent().getTimeoutId());
       trigger(NetMessage(self, server, Connect(timeoutId.get)) -> net);
       trigger(st -> timer);

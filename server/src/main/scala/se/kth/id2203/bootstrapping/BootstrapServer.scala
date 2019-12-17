@@ -58,10 +58,10 @@ class BootstrapServer extends ComponentDefinition {
   ctrl uponEvent {
     case _: Start => {
       log.info("Starting bootstrap server on {}, waiting for {} nodes...", self, bootThreshold);
-      val timeout: Long = (cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2l);
+      val timeout: Long = (cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2L);
       val spt = new SchedulePeriodicTimeout(timeout, timeout);
       spt.setTimeoutEvent(BSTimeout(spt));
-      trigger (spt -> timer);
+      trigger(spt -> timer);
       timeoutId = Some(spt.getTimeoutEvent().getTimeoutId());
       active += self;
     }

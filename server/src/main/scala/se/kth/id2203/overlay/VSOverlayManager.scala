@@ -31,15 +31,15 @@ import se.sics.kompics.timer.Timer;
 import util.Random;
 
 /**
- * The V(ery)S(imple)OverlayManager.
- * <p>
- * Keeps all nodes in a single partition in one replication group.
- * <p>
- * Note: This implementation does not fulfill the project task. You have to
- * support multiple partitions!
- * <p>
- * @author Lars Kroll <lkroll@kth.se>
- */
+  * The V(ery)S(imple)OverlayManager.
+  * <p>
+  * Keeps all nodes in a single partition in one replication group.
+  * <p>
+  * Note: This implementation does not fulfill the project task. You have to
+  * support multiple partitions!
+  * <p>
+  * @author Lars Kroll <lkroll@kth.se>
+  */
 class VSOverlayManager extends ComponentDefinition {
 
   //******* Ports ******
@@ -56,7 +56,7 @@ class VSOverlayManager extends ComponentDefinition {
       log.info("Generating LookupTable...");
       val lut = LookupTable.generate(nodes);
       logger.debug("Generated assignments:\n$lut");
-      trigger (new InitialAssignments(lut) -> boot);
+      trigger(new InitialAssignments(lut) -> boot);
     }
     case Booted(assignment: LookupTable) => {
       log.info("Got NodeAssignment, overlay ready.");
@@ -78,7 +78,7 @@ class VSOverlayManager extends ComponentDefinition {
         case Some(l) => {
           log.debug("Accepting connection request from ${header.src}");
           val size = l.getNodes().size;
-          trigger (NetMessage(self, header.src, msg.ack(size)) -> net);
+          trigger(NetMessage(self, header.src, msg.ack(size)) -> net);
         }
         case None => log.info("Rejecting connection request from ${header.src}, as system is not ready, yet.");
       }
@@ -92,7 +92,7 @@ class VSOverlayManager extends ComponentDefinition {
       val i = Random.nextInt(nodes.size);
       val target = nodes.drop(i).head;
       log.info(s"Routing message for key $key to $target");
-      trigger (NetMessage(self, target, msg) -> net);
+      trigger(NetMessage(self, target, msg) -> net);
     }
   }
 }

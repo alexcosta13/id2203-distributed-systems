@@ -1,7 +1,7 @@
 name := "project20"
 organization in ThisBuild := "se.kth.id2203"
 version in ThisBuild := "1.2.1-SNAPSHOT"
-scalaVersion in ThisBuild := "2.12.8"
+scalaVersion in ThisBuild := "2.13.1"
 
 // PROJECTS
 
@@ -57,15 +57,16 @@ lazy val deps =
   new {
     val logbackV        = "1.2.+"
     val scalaLoggingV   = "3.9.+"
-    val scalatestV      = "3.0.5"
-    val kompicsV        = "1.0.1"
+    val scalatestV      = "3.1.0"
+    val kompicsV        = "1.2.1"
     val kompicsScalaV   = "2.0.+"
-    val commonUtilsV    = "2.0.1"
-    val scallopV        = "3.1.1"
+    val commonUtilsV    = "2.1.0"
+    val scallopV        = "3.3.0"
     val jlineV          = "3.5.1"
     val log4jV          = "1.2.+"
     val slf4jV          = "1.7.+"
-    val fastparseV      = "1.0.0"
+    val fastparseV      = "2.1.3"
+
 
     val logback        = "ch.qos.logback"             %  "logback-classic"                 % logbackV
     val scalaLogging   = "com.typesafe.scala-logging" %% "scala-logging"                   % scalaLoggingV

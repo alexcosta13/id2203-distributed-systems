@@ -33,3 +33,8 @@ project/plugins/project/
 # src/main/resources/application.conf
 .DS_STORE
 nb-configuration.xml
+
+# Metals
+.bloop/
+.metals/
+*.code-workspace
