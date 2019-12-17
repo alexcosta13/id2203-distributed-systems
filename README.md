@@ -52,7 +52,7 @@ client/assembly
 To run a bootstrap server node execute:
 
 ```
-java -jar server/target/scala-2.12/server.jar -p 45678
+java -jar server/target/scala-2.13/server.jar -p 45678
 ```
 
 This will start the bootstrap server on localhost:45678.
@@ -61,7 +61,7 @@ This will start the bootstrap server on localhost:45678.
 After you started a bootstrap server on `<bsip>:<bsport>`, again from the `server` directory execute:
 
 ```
-java -jar server/target/scala-2.12/server.jar -p 45679 -s <bsip>:<bsport>
+java -jar server/target/scala-2.13/server.jar -p 45679 -s <bsip>:<bsport>
 ```
 This will start the bootstrap server on localhost:45679, and ask it to connect to the bootstrap server at `<bsip>:<bsport>`.
 Make sure you start every node on a different port if they are all running directly on the local machine.
@@ -73,7 +73,7 @@ The number can be changed in the configuration file (cf. [Kompics docs](http://k
 To start a client (after the cluster is properly running) execute:
 
 ```
-java -jar client/target/scala-2.12/client.jar -p 56787 -s <bsip>:<bsport>
+java -jar client/target/scala-2.13/client.jar -p 56787 -s <bsip>:<bsport>
 ```
 
 Again, make sure not to double allocate ports on the same machine.
