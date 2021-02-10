@@ -37,7 +37,11 @@ class KVService extends ComponentDefinition {
   val self = cfg.getValue[NetAddress]("id2203.project.address");
   //******* Handlers ******
   net uponEvent {
-    case NetMessage(header, op: Op) => {
+    case NetMessage(header, op @ Get(key, _)) => {
+      log.info("Got operation {}! Now implement me please :)", op);
+      trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net);
+    }
+    case NetMessage(header, op @ Put(key, value, _)) => {
       log.info("Got operation {}! Now implement me please :)", op);
       trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net);
     }

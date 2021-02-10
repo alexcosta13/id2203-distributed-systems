@@ -39,20 +39,38 @@ object ClientConsole {
   val colouredLayout = new ColoredPatternLayout("%d{[HH:mm:ss,SSS]} %-5p {%c{1}} %m%n");
 }
 
+case class PutObject(key: String, value: String)
+case class CasObject(key: String, refValue: String, newValue: String)
+
 class ClientConsole(val service: ClientService) extends CommandConsole with ParsedCommands with StrictLogging {
   import ClientConsole._;
 
   override def layout: Layout = colouredLayout;
   override def onInterrupt(): Unit = exit();
 
-  val opParser = new ParsingObject[String] {
-    override def parseOperation[_: P]: P[String] = P("op" ~ " " ~ simpleStr.!);
+  val getParser = new ParsingObject[String] {
+    override def parseOperation[_: P]: P[String] = P("get" ~ " " ~ simpleStr.!);
   }
 
-  val opCommand = parsed(opParser, usage = "op <key>", descr = "Executes an op for <key>.") { key =>
-    println(s"Op with $key");
+  val putParser = new ParsingObject[PutObject] {
+    override def parseOperation[_: P]: P[PutObject] =
+      P("put" ~ " " ~ simpleStr.rep.! ~ " " ~ simpleStr.rep.!).map(x => PutObject(x._1, x._2))
+  }
 
-    val fr = service.op(key);
+  val casParser = new ParsingObject[CasObject] {
+    override def parseOperation[_: P]: P[CasObject] =
+      P("cas" ~ " " ~ simpleStr.rep.! ~ " " ~ simpleStr.rep.! ~ " " ~ simpleStr.rep.!)
+        .map(x => CasObject(x._1, x._2, x._3))
+  }
+
+  val putCommand = parsed(putParser, usage = "put <key> <value>", descr = "Executes put for <key> <value>.") {
+    case PutObject(key, value) =>
+      // Create a PUT operation through ClientService
+      out.println("Implement me");
+  }
+
+  val getCommand = parsed(getParser, usage = "get <key>", descr = "Executes get for <key>.") { key =>
+    val fr = service.get(key);
     out.println("Operation sent! Awaiting response...");
     try {
       val r = Await.result(fr, 5.seconds);
@@ -60,6 +78,14 @@ class ClientConsole(val service: ClientService) extends CommandConsole with Pars
     } catch {
       case e: Throwable => logger.error("Error during op.", e);
     }
-  };
+
+  }
+  val casCommand = parsed(casParser,
+                          usage = "cas <key> <ref-value> <new-value>",
+                          descr = "Executes cas for <key> <ref-value> <new-value>.") {
+    case CasObject(key, refValue, newValue) =>
+      // Create a CAS operation through ClientService
+      out.println("Implement me");
+  }
 
 }

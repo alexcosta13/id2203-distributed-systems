@@ -36,6 +36,16 @@ case class Op(key: String, id: UUID = UUID.randomUUID()) extends Operation with 
   def response(status: OpCode.OpCode): OpResponse = OpResponse(id, status);
 }
 
+@SerialVersionUID(-374812437823538710L)
+case class Get(key: String, id: UUID = UUID.randomUUID()) extends Operation with Serializable {
+  def response(status: OpCode.OpCode): OpResponse = OpResponse(id, status);
+}
+
+@SerialVersionUID(-374812437823538710L)
+case class Put(key: String, value: String, id: UUID = UUID.randomUUID()) extends Operation with Serializable {
+  def response(status: OpCode.OpCode): OpResponse = OpResponse(id, status);
+}
+
 object OpCode {
   sealed trait OpCode;
   case object Ok extends OpCode;
