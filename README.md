@@ -17,6 +17,10 @@ You are encouraged to create your own forks and work on them, modifying everythi
 - [ ] Server CAS implementation
 - [ ] Test CAS and linearizability
 
+
+- [ ] Log consensus
+- [ ] Implement FIFOpl?
+
 ## Overview
 
 The project is split into 3 sub parts:
