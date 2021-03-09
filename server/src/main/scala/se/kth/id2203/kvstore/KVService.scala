@@ -21,29 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.kth.id2203.kvstore;
+package se.kth.id2203.kvstore
 
-import se.kth.id2203.networking._;
-import se.kth.id2203.overlay.Routing;
-import se.sics.kompics.sl._;
-import se.sics.kompics.network.Network;
+import se.kth.id2203.consensus.SequenceConsensus
+import se.kth.id2203.networking._
+import se.kth.id2203.overlay.Routing
+import se.sics.kompics.sl._
+import se.sics.kompics.network.Network
+
+import scala.collection.mutable
 
 class KVService extends ComponentDefinition {
 
   //******* Ports ******
-  val net = requires[Network];
-  val route = requires(Routing);
+  val net: PositivePort[Network] = requires[Network]
+  val route: PositivePort[Routing.type] = requires(Routing)
+  val consensus: PositivePort[SequenceConsensus.type] = requires(SequenceConsensus)
+
   //******* Fields ******
-  val self = cfg.getValue[NetAddress]("id2203.project.address");
+  val self: NetAddress = cfg.getValue[NetAddress]("id2203.project.address")
+  var data: mutable.Map[String, String] = mutable.HashMap[String, String]()
+
   //******* Handlers ******
   net uponEvent {
     case NetMessage(header, op @ Get(key, _)) => {
-      log.info("Got operation {}! Now implement me please :)", op);
-      trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net);
+      log.info("Got operation {}! Now implement me please :)", op)
+      trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net)
     }
     case NetMessage(header, op @ Put(key, value, _)) => {
-      log.info("Got operation {}! Now implement me please :)", op);
-      trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net);
+      log.info("Got operation {}! Now implement me please :)", op)
+      trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net)
+    }
+    case NetMessage(header, op @ Cas(key, refValue, newValue, _)) => {
+      log.info("Got operation {}! Now implement me please :)", op)
+      trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net)
     }
   }
 }
