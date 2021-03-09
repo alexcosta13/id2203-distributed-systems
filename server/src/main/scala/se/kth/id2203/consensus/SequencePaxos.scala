@@ -30,21 +30,21 @@ class SequencePaxos() extends ComponentDefinition {
   var nProm = 0L
   var leader: Option[NetAddress] = None
   var na = 0L
-  var va = List.empty[Command]
+  var va = List.empty[RSM_Command]
   var ld = 0
   // leader state
-  var propCmds = List.empty[Command]
+  var propCmds = List.empty[RSM_Command]
   val las = mutable.Map.empty[NetAddress, Int]
   val lds = mutable.Map.empty[NetAddress, Int]
   var lc = 0
-  val acks = mutable.Map.empty[NetAddress, (Long, List[Command])]
+  val acks = mutable.Map.empty[NetAddress, (Long, List[RSM_Command])]
 
   //******* Functions ******
-  def suffix(s: List[Command], l: Int): List[Command] = {
+  def suffix(s: List[RSM_Command], l: Int): List[RSM_Command] = {
     s.drop(l)
   }
 
-  def prefix(s: List[Command], l: Int): List[Command] = {
+  def prefix(s: List[RSM_Command], l: Int): List[RSM_Command] = {
     s.take(l)
   }
 
@@ -93,7 +93,7 @@ class SequencePaxos() extends ComponentDefinition {
       if (nProm < np) {
         nProm = np
         state = (FOLLOWER, PREPARE)
-        var sfx = List.empty[Command]
+        var sfx = List.empty[RSM_Command]
         if (na >= n) {
           sfx = suffix(va, ldp)
         }
