@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.kth.id2203.client;
+package se.kth.id2203.client
 
 import se.kth.id2203.kvstore.ClientService
 import se.kth.id2203.networking._
@@ -30,7 +30,7 @@ import se.sics.kompics.{Component, Init}
 import se.sics.kompics.network.Network
 import se.sics.kompics.network.netty._
 import se.sics.kompics.timer.Timer
-import se.sics.kompics.timer.java.JavaTimer;
+import se.sics.kompics.timer.java.JavaTimer
 
 class ParentComponent extends ComponentDefinition {
 

@@ -125,5 +125,4 @@ class ClientService extends ComponentDefinition {
     trigger(owf -> onSelf)
     owf.promise.future
   }
-
 }

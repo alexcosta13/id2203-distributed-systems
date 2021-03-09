@@ -10,10 +10,10 @@ You are encouraged to create your own forks and work on them, modifying everythi
 - [x] Sequence Consensus
 - [ ] Server GET implementation
 - [ ] Test GET and linearizability
-- [ ] Client PUT implementation
+- [x] Client PUT implementation
 - [ ] Server PUT implementation
 - [ ] Test PUT and linearizability
-- [ ] Client CAS implementation
+- [x] Client CAS implementation
 - [ ] Server CAS implementation
 - [ ] Test CAS and linearizability
 
