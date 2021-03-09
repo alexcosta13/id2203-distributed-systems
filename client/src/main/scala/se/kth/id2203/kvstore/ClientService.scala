@@ -40,43 +40,44 @@ case class OpWithPromise(op: Operation, promise: Promise[OpResponse] = Promise()
 class ClientService extends ComponentDefinition {
 
   //******* Ports ******
-  val timer = requires[Timer];
-  val net = requires[Network];
+  val timer: PositivePort[Timer] = requires[Timer]
+  val net: PositivePort[Network] = requires[Network]
+
   //******* Fields ******
-  val self = cfg.getValue[NetAddress]("id2203.project.address");
-  val server = cfg.getValue[NetAddress]("id2203.project.bootstrap-address");
-  private var connected: Option[ConnectAck] = None;
-  private var timeoutId: Option[UUID] = None;
-  private val pending = mutable.SortedMap.empty[UUID, Promise[OpResponse]];
+  val self: NetAddress = cfg.getValue[NetAddress]("id2203.project.address")
+  val server: NetAddress = cfg.getValue[NetAddress]("id2203.project.bootstrap-address")
+  private var connected: Option[ConnectAck] = None
+  private var timeoutId: Option[UUID] = None
+  private val pending = mutable.SortedMap.empty[UUID, Promise[OpResponse]] // keeps track of the pending commands
 
   //******* Handlers ******
   ctrl uponEvent {
     case _: Start => {
-      log.debug(s"Starting client on $self. Waiting to connect...");
-      val timeout: Long = (cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2L);
-      val st = new ScheduleTimeout(timeout);
-      st.setTimeoutEvent(ConnectTimeout(st));
-      trigger(st -> timer);
-      timeoutId = Some(st.getTimeoutEvent().getTimeoutId());
-      trigger(NetMessage(self, server, Connect(timeoutId.get)) -> net);
-      trigger(st -> timer);
+      log.debug(s"Starting client on $self. Waiting to connect...")
+      val timeout: Long = cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2L
+      val st = new ScheduleTimeout(timeout)
+      st.setTimeoutEvent(ConnectTimeout(st))
+      trigger(st -> timer)
+      timeoutId = Some(st.getTimeoutEvent().getTimeoutId())
+      trigger(NetMessage(self, server, Connect(timeoutId.get)) -> net)
+      trigger(st -> timer)
     }
   }
 
   net uponEvent {
     case NetMessage(header, ack @ ConnectAck(id, clusterSize)) => {
-      log.info(s"Client connected to $server, cluster size is $clusterSize");
+      log.info(s"Client connected to $server, cluster size is $clusterSize")
       if (id != timeoutId.get) {
-        log.error("Received wrong response id! System may be inconsistent. Shutting down...");
-        System.exit(1);
+        log.error("Received wrong response id! System may be inconsistent. Shutting down...")
+        System.exit(1)
       }
       connected = Some(ack);
-      val c = new ClientConsole(ClientService.this);
-      val tc = new Thread(c);
-      tc.start();
+      val c = new ClientConsole(ClientService.this)
+      val tc = new Thread(c)
+      tc.start()
     }
     case NetMessage(header, or @ OpResponse(id, status)) => {
-      log.debug(s"Got OpResponse: $or");
+      log.debug(s"Got OpResponse: $or")
       pending.remove(id) match {
         case Some(promise) => promise.success(or);
         case None          => log.warn(s"ID $id was not pending! Ignoring response.");
@@ -89,8 +90,8 @@ class ClientService extends ComponentDefinition {
       connected match {
         case Some(ack) => // already connected
         case None => {
-          log.error(s"Connection to server $server did not succeed. Shutting down...");
-          Kompics.asyncShutdown();
+          log.error(s"Connection to server $server did not succeed. Shutting down...")
+          Kompics.asyncShutdown()
         }
       }
     }
@@ -99,16 +100,18 @@ class ClientService extends ComponentDefinition {
   loopbck uponEvent {
     case OpWithPromise(op, promise) => {
       val rm = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
-      trigger(NetMessage(self, server, rm) -> net);
-      pending += (op.id -> promise);
+      trigger(NetMessage(self, server, rm) -> net)
+      pending += (op.id -> promise)
     }
   }
 
   def get(key: String): Future[OpResponse] = {
-    val op = Get(key);
-    val owf = OpWithPromise(op);
-    trigger(owf -> onSelf);
+    val op = Get(key)
+    val owf = OpWithPromise(op)
+    trigger(owf -> onSelf)
     owf.promise.future
   }
+
+  // TODO implement put() and cas()
 
 }
