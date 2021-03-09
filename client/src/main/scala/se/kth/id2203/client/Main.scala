@@ -21,64 +21,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.kth.id2203.client;
+package se.kth.id2203.client
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.UUID;
-import se.kth.id2203.networking._;
-import se.kth.id2203.kvstore.ClientConsole;
-import se.sics.kompics.Kompics;
-import se.sics.kompics.config._;
-import se.sics.kompics.network.netty.serialization.Serializers;
+import java.net.InetAddress
+import java.util.UUID
+import se.kth.id2203.networking._
+import se.sics.kompics.Kompics
+import se.sics.kompics.config._
+import se.sics.kompics.network.netty.serialization.Serializers
 import org.rogach.scallop._
-import org.apache.log4j.{Layout, LogManager, PatternLayout, WriterAppender};
 
 class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
-  import ScallopConverters._;
+  import ScallopConverters._
 
-  version("Project18 Scala Client v1.0");
-  banner("Usage: <call jar> [OPTIONS]");
-  footer("\n");
+  version("Project18 Scala Client v1.0")
+  banner("Usage: <call jar> [OPTIONS]")
+  footer("\n")
 
-  val server = opt[NetAddress](descr = "Set Bootstrap server to <arg> (ip:port)");
-  val ip = opt[InetAddress](descr = "Change local ip to <arg> (default from config file)");
-  val port =
-    opt[Int](validate = (i => (0 < i) && (i < 65535)), descr = "Change local port to <arg> (default from config file)");
+  val server: ScallopOption[NetAddress] = opt[NetAddress](descr = "Set Bootstrap server to <arg> (ip:port)")
+  val ip: ScallopOption[InetAddress] = opt[InetAddress](descr = "Change local ip to <arg> (default from config file)")
+  val port: ScallopOption[Int] =
+    opt[Int](validate = i => (0 < i) && (i < 65535), descr = "Change local port to <arg> (default from config file)")
   verify()
 }
 
 object Main {
 
-  Conversions.register(NetAddressConverter);
-  Serializers.register(classOf[Serializable], "javaS");
+  Conversions.register(NetAddressConverter)
+  Serializers.register(classOf[Serializable], "javaS")
 
   def main(args: Array[String]): Unit = {
-    val conf = new Conf(args.toSeq);
+    val conf = new Conf(args.toSeq)
     // avoid constant conversion of the address by converting once and reassigning
     // sorry Java API  only :(
-    val c = Kompics.getConfig().asInstanceOf[Config.Impl];
-    val configSelf = c.getValue("id2203.project.address", classOf[NetAddress]);
+    val c = Kompics.getConfig().asInstanceOf[Config.Impl]
+    val configSelf = c.getValue("id2203.project.address", classOf[NetAddress])
     assert(configSelf != null, "No config provided!"); // it would be in the reference.conf
-    val configBuilder = c.modify(UUID.randomUUID());
+    val configBuilder = c.modify(UUID.randomUUID())
     val self = (conf.ip.toOption, conf.port.toOption) match {
       case (None, None) => configSelf
       case (cip, cp)    => NetAddress(cip.getOrElse(configSelf.getIp()), cp.getOrElse(configSelf.getPort()))
     };
-    configBuilder.setValue("id2203.project.address", self);
+    configBuilder.setValue("id2203.project.address", self)
     if (conf.server.isSupplied) {
-      configBuilder.setValue("id2203.project.bootstrap-address", conf.server());
+      configBuilder.setValue("id2203.project.bootstrap-address", conf.server())
     }
-    val configUpdate = configBuilder.finalise();
-    c.apply(configUpdate, ValueMerger.NONE);
-    val bootstrapAddress = c.getValue("id2203.project.bootstrap-address", classOf[NetAddress]);
-    assert(bootstrapAddress != null, "No bootstrap server provided!");
+    val configUpdate = configBuilder.finalise()
+    c.apply(configUpdate, ValueMerger.NONE)
+    val bootstrapAddress = c.getValue("id2203.project.bootstrap-address", classOf[NetAddress])
+    assert(bootstrapAddress != null, "No bootstrap server provided!")
 
     // Finally start stuff
-    Kompics.createAndStart(classOf[ParentComponent]);
-    Kompics.logger.info("Kompics started.");
-    Kompics.waitForTermination();
-    Kompics.logger.info("Kompics was terminated. Exiting...");
+    Kompics.createAndStart(classOf[ParentComponent])
+    Kompics.logger.info("Kompics started.")
+    Kompics.waitForTermination()
+    Kompics.logger.info("Kompics was terminated. Exiting...")
   }
-
 }
