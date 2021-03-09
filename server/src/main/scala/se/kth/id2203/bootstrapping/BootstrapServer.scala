@@ -40,30 +40,32 @@ object BootstrapServer {
 }
 
 class BootstrapServer extends ComponentDefinition {
-  import BootstrapServer._;
+  import BootstrapServer._
 
   //******* Ports ******
-  val boot = provides(Bootstrapping);
-  val net = requires[Network];
-  val timer = requires[Timer];
+  val boot: NegativePort[Bootstrapping.type] = provides(Bootstrapping)
+  val net: PositivePort[Network] = requires[Network]
+  val timer: PositivePort[Timer] = requires[Timer]
+
   //******* Fields ******
-  val self = cfg.getValue[NetAddress]("id2203.project.address");
-  val bootThreshold = cfg.getValue[Int]("id2203.project.bootThreshold");
-  private var state: State = Collecting;
-  private var timeoutId: Option[UUID] = None;
-  private val active = mutable.HashSet.empty[NetAddress];
-  private val ready = mutable.HashSet.empty[NetAddress];
-  private var initialAssignment: Option[NodeAssignment] = None;
+  val self: NetAddress = cfg.getValue[NetAddress]("id2203.project.address")
+  val bootThreshold: Int = cfg.getValue[Int]("id2203.project.bootThreshold")
+  private var state: State = Collecting
+  private var timeoutId: Option[UUID] = None
+  private val active = mutable.HashSet.empty[NetAddress]
+  private val ready = mutable.HashSet.empty[NetAddress]
+  private var initialAssignment: Option[NodeAssignment] = None
+
   //******* Handlers ******
   ctrl uponEvent {
     case _: Start => {
-      log.info("Starting bootstrap server on {}, waiting for {} nodes...", self, bootThreshold);
-      val timeout: Long = (cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2L);
-      val spt = new SchedulePeriodicTimeout(timeout, timeout);
-      spt.setTimeoutEvent(BSTimeout(spt));
-      trigger(spt -> timer);
-      timeoutId = Some(spt.getTimeoutEvent().getTimeoutId());
-      active += self;
+      log.info("Starting bootstrap server on {}, waiting for {} nodes...", self, bootThreshold)
+      val timeout: Long = cfg.getValue[Long]("id2203.project.keepAlivePeriod") * 2L
+      val spt = new SchedulePeriodicTimeout(timeout, timeout)
+      spt.setTimeoutEvent(BSTimeout(spt))
+      trigger(spt -> timer)
+      timeoutId = Some(spt.getTimeoutEvent().getTimeoutId())
+      active += self
     }
   }
 
@@ -71,29 +73,29 @@ class BootstrapServer extends ComponentDefinition {
     case BSTimeout(_) => {
       state match {
         case Collecting => {
-          log.info("{} hosts in active set.", active.size);
+          log.info("{} hosts in active set.", active.size)
           if (active.size >= bootThreshold) {
-            bootUp();
+            bootUp()
           }
         }
         case Seeding => {
-          log.info("{} hosts in ready set.", ready.size);
+          log.info("{} hosts in ready set.", ready.size)
           if (ready.size >= bootThreshold) {
-            log.info("Finished seeding. Bootstrapping complete.");
+            log.info("Finished seeding. Bootstrapping complete.")
             initialAssignment match {
               case Some(assignment) => {
-                trigger(Booted(assignment) -> boot);
-                state = Done;
+                trigger(Booted(assignment) -> boot)
+                state = Done
               }
               case None => {
-                logger.error(s"No initial assignment received at bootThreshold. Ready nodes: $ready");
-                suicide();
+                logger.error(s"No initial assignment received at bootThreshold. Ready nodes: $ready")
+                suicide()
               }
             }
           }
         }
         case Done => {
-          suicide();
+          suicide()
         }
       }
     }
@@ -101,21 +103,21 @@ class BootstrapServer extends ComponentDefinition {
 
   boot uponEvent {
     case InitialAssignments(assignment) => {
-      initialAssignment = Some(assignment);
-      log.info("Seeding assignments...");
+      initialAssignment = Some(assignment)
+      log.info("Seeding assignments...")
       active foreach { node =>
         trigger(NetMessage(self, node, Boot(assignment)) -> net);
       }
-      ready += self;
+      ready += self
     }
   }
 
   net uponEvent {
     case NetMessage(header, CheckIn) => {
-      active += header.src;
+      active += header.src
     }
     case NetMessage(header, Ready) => {
-      ready += header.src;
+      ready += header.src
     }
   }
 
@@ -127,8 +129,8 @@ class BootstrapServer extends ComponentDefinition {
   }
 
   private def bootUp(): Unit = {
-    log.info("Threshold reached. Generating assignments...");
-    state = Seeding;
-    trigger(GetInitialAssignments(active.toSet) -> boot);
+    log.info("Threshold reached. Generating assignments...")
+    state = Seeding
+    trigger(GetInitialAssignments(active.toSet) -> boot)
   }
 }

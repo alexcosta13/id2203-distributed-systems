@@ -23,6 +23,7 @@
  */
 package se.kth.id2203;
 
+import se.kth.id2203.ballotleaderelection.GossipLeaderElection
 import se.kth.id2203.bootstrapping._
 import se.kth.id2203.kvstore.KVService
 import se.kth.id2203.networking.NetAddress
@@ -50,8 +51,10 @@ class ParentComponent extends ComponentDefinition {
     case Some(_) => create(classOf[BootstrapClient], Init.NONE); // start in client mode
     case None    => create(classOf[BootstrapServer], Init.NONE); // start in server mode
   }
+  val ble: Component = create(classOf[GossipLeaderElection], Init.NONE)
 
   {
+    // bootstrap
     connect[Timer](timer -> boot)
     connect[Network](net -> boot)
     // Overlay
@@ -60,5 +63,9 @@ class ParentComponent extends ComponentDefinition {
     // KV
     connect(Routing)(overlay -> kv)
     connect[Network](net -> kv)
+    // BLE
+    connect[Timer](timer -> ble)
+    connect[Network](net -> ble)
+    connect(TopologyProvider)(overlay -> ble)
   }
 }
