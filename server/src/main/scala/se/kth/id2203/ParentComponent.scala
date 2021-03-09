@@ -23,8 +23,9 @@
  */
 package se.kth.id2203;
 
-import se.kth.id2203.ballotleaderelection.GossipLeaderElection
+import se.kth.id2203.ballotleaderelection.{BallotLeaderElection, GossipLeaderElection}
 import se.kth.id2203.bootstrapping._
+import se.kth.id2203.consensus.{SequenceConsensus, SequencePaxos}
 import se.kth.id2203.kvstore.KVService
 import se.kth.id2203.networking.NetAddress
 import se.kth.id2203.overlay._
@@ -52,6 +53,7 @@ class ParentComponent extends ComponentDefinition {
     case None    => create(classOf[BootstrapServer], Init.NONE); // start in server mode
   }
   val ble: Component = create(classOf[GossipLeaderElection], Init.NONE)
+  val sc: Component = create(classOf[SequencePaxos], Init.NONE)
 
   {
     // bootstrap
@@ -63,9 +65,14 @@ class ParentComponent extends ComponentDefinition {
     // KV
     connect(Routing)(overlay -> kv)
     connect[Network](net -> kv)
+    // connect(SequenceConsensus)(sc -> kv)
     // BLE
     connect[Timer](timer -> ble)
     connect[Network](net -> ble)
     connect(TopologyProvider)(overlay -> ble)
+    // SC
+    connect[Network](net -> sc)
+    connect(TopologyProvider)(overlay -> sc)
+    connect(BallotLeaderElection)(ble -> sc)
   }
 }
