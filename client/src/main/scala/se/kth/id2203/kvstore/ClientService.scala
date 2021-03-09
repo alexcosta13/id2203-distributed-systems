@@ -21,21 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.kth.id2203.kvstore;
+package se.kth.id2203.kvstore
 
 import java.util.UUID;
-import se.kth.id2203.networking._;
+import se.kth.id2203.networking._
 
-import se.kth.id2203.overlay._;
-import se.sics.kompics.sl._;
-import se.sics.kompics.{Kompics, KompicsEvent, Start};
-import se.sics.kompics.network.Network;
-import se.sics.kompics.timer._;
-import collection.mutable;
-import concurrent.{Future, Promise};
+import se.kth.id2203.overlay._
+import se.sics.kompics.sl._
+import se.sics.kompics.{Kompics, KompicsEvent, Start}
+import se.sics.kompics.network.Network
+import se.sics.kompics.timer._
+import collection.mutable
+import concurrent.{Future, Promise}
 
-case class ConnectTimeout(spt: ScheduleTimeout) extends Timeout(spt);
-case class OpWithPromise(op: Operation, promise: Promise[OpResponse] = Promise()) extends KompicsEvent;
+case class ConnectTimeout(spt: ScheduleTimeout) extends Timeout(spt)
+case class OpWithPromise(op: Operation, promise: Promise[OpResponse] = Promise()) extends KompicsEvent
 
 class ClientService extends ComponentDefinition {
 
@@ -112,6 +112,18 @@ class ClientService extends ComponentDefinition {
     owf.promise.future
   }
 
-  // TODO implement put() and cas()
+  def put(key: String, value: String): Future[OpResponse] = {
+    val op = Put(key, value)
+    val owf = OpWithPromise(op)
+    trigger(owf -> onSelf)
+    owf.promise.future
+  }
+
+  def cas(key: String, refValue: String, newValue: String): Future[OpResponse] = {
+    val op = Cas(key, refValue, newValue)
+    val owf = OpWithPromise(op)
+    trigger(owf -> onSelf)
+    owf.promise.future
+  }
 
 }

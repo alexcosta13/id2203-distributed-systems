@@ -5,9 +5,9 @@ You are encouraged to create your own forks and work on them, modifying everythi
 
 ## TODO list
 
-- [ ] Provide topology from VSOverlayManager
-- [ ] Ballot Leader Election
-- [ ] Sequence Consensus
+- [x] Provide topology from VSOverlayManager
+- [x] Ballot Leader Election
+- [x] Sequence Consensus
 - [ ] Server GET implementation
 - [ ] Test GET and linearizability
 - [ ] Client PUT implementation
