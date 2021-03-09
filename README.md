@@ -3,6 +3,20 @@
 This project contains some code to get you started with the project.
 You are encouraged to create your own forks and work on them, modifying everything and anything as you desire it.
 
+## TODO list
+
+- [ ] Provide topology from VSOverlayManager
+- [ ] Ballot Leader Election
+- [ ] Sequence Consensus
+- [ ] Server GET implementation
+- [ ] Test GET and linearizability
+- [ ] Client PUT implementation
+- [ ] Server PUT implementation
+- [ ] Test PUT and linearizability
+- [ ] Client CAS implementation
+- [ ] Server CAS implementation
+- [ ] Test CAS and linearizability
+
 ## Overview
 
 The project is split into 3 sub parts:

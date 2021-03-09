@@ -46,6 +46,8 @@ case class Put(key: String, value: String, id: UUID = UUID.randomUUID()) extends
   def response(status: OpCode.OpCode): OpResponse = OpResponse(id, status);
 }
 
+// TODO case class CAS
+
 object OpCode {
   sealed trait OpCode;
   case object Ok extends OpCode;
