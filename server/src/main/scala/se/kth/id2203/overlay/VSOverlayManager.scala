@@ -43,42 +43,47 @@ import util.Random;
 class VSOverlayManager extends ComponentDefinition {
 
   //******* Ports ******
-  val route = provides(Routing);
-  val boot = requires(Bootstrapping);
-  val net = requires[Network];
-  val timer = requires[Timer];
+  val route: NegativePort[Routing.type] = provides(Routing)
+  val boot: PositivePort[Bootstrapping.type] = requires(Bootstrapping)
+  val net: PositivePort[Network] = requires[Network]
+  val timer: PositivePort[Timer] = requires[Timer]
+  val topology: NegativePort[TopologyProvider.type] = provides(TopologyProvider)
+
   //******* Fields ******
-  val self = cfg.getValue[NetAddress]("id2203.project.address");
-  private var lut: Option[LookupTable] = None;
+  val self: NetAddress = cfg.getValue[NetAddress]("id2203.project.address")
+  private var lut: Option[LookupTable] = None
+
   //******* Handlers ******
   boot uponEvent {
     case GetInitialAssignments(nodes) => {
-      log.info("Generating LookupTable...");
-      val lut = LookupTable.generate(nodes);
-      logger.debug("Generated assignments:\n$lut");
-      trigger(new InitialAssignments(lut) -> boot);
+      log.info("Generating LookupTable...")
+      val lut = LookupTable.generate(nodes)
+      logger.debug("Generated assignments:\n$lut")
+      trigger(new InitialAssignments(lut) -> boot)
     }
     case Booted(assignment: LookupTable) => {
-      log.info("Got NodeAssignment, overlay ready.");
-      lut = Some(assignment);
+      log.info("Got NodeAssignment, overlay ready.")
+      lut = Some(assignment)
+      val nodes = lut.get.getNodes()
+      trigger(TopologyMsg(nodes) -> topology)
     }
   }
 
   net uponEvent {
     case NetMessage(header, RouteMsg(key, msg)) => {
-      val nodes = lut.get.lookup(key);
-      assert(!nodes.isEmpty);
-      val i = Random.nextInt(nodes.size);
-      val target = nodes.drop(i).head;
+      val nodes = lut.get.lookup(key)
+      assert(!nodes.isEmpty)
+      val i = Random.nextInt(nodes.size)
+      val target = nodes.drop(i).head
       log.info(s"Forwarding message for key $key to $target");
-      trigger(NetMessage(header.src, target, msg) -> net);
+      trigger(NetMessage(header.src, target, msg) -> net)
     }
     case NetMessage(header, msg: Connect) => {
       lut match {
         case Some(l) => {
-          log.debug("Accepting connection request from ${header.src}");
-          val size = l.getNodes().size;
-          trigger(NetMessage(self, header.src, msg.ack(size)) -> net);
+          log.debug("Accepting connection request from ${header.src}")
+          val size = l.getNodes().size
+          trigger(NetMessage(self, header.src, msg.ack(size)) -> net)
         }
         case None => log.info("Rejecting connection request from ${header.src}, as system is not ready, yet.");
       }
@@ -87,12 +92,12 @@ class VSOverlayManager extends ComponentDefinition {
 
   route uponEvent {
     case RouteMsg(key, msg) => {
-      val nodes = lut.get.lookup(key);
-      assert(!nodes.isEmpty);
-      val i = Random.nextInt(nodes.size);
-      val target = nodes.drop(i).head;
-      log.info(s"Routing message for key $key to $target");
-      trigger(NetMessage(self, target, msg) -> net);
+      val nodes = lut.get.lookup(key)
+      assert(!nodes.isEmpty)
+      val i = Random.nextInt(nodes.size)
+      val target = nodes.drop(i).head
+      log.info(s"Routing message for key $key to $target")
+      trigger(NetMessage(self, target, msg) -> net)
     }
   }
 }

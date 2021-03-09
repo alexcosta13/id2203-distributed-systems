@@ -21,10 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.kth.id2203.bootstrapping
+package se.kth.id2203.overlay
 
+import se.kth.id2203.networking.NetAddress
 import se.sics.kompics.KompicsEvent
 
-case class Boot(assignment: NodeAssignment) extends KompicsEvent
-case object CheckIn extends KompicsEvent
-case object Ready extends KompicsEvent;
+case class TopologyMsg(topology: Set[NetAddress]) extends KompicsEvent with Serializable;
