@@ -38,6 +38,7 @@ import se.sics.kompics.simulator.run.LauncherComp
 import se.sics.kompics.simulator.result.SimulationResultSingleton
 import se.sics.kompics.simulator.network.impl.NetworkModels
 
+import java.util.Random
 import scala.concurrent.duration._
 
 class OpsTest extends FlatSpec with Matchers {
@@ -80,7 +81,7 @@ object SimpleScenario {
 
   import Distributions._
   // needed for the distributions, but needs to be initialised after setting the seed
-  implicit val random = JSimulationScenario.getRandom()
+  implicit val random: Random = JSimulationScenario.getRandom()
 
   private def intToServerAddress(i: Int): Address = {
     try {
