@@ -49,11 +49,6 @@ class SequencePaxos() extends ComponentDefinition {
   }
 
   //******* Handlers ******
-  ctrl uponEvent {
-    case _: Start =>  {
-    }
-  }
-
   topology uponEvent {
     case TopologyMsg(topology) => {
       log.debug(s"Paxos gets topology.")
@@ -65,6 +60,7 @@ class SequencePaxos() extends ComponentDefinition {
 
   ble uponEvent {
     case BLE_Leader(l, n) => {
+      if (l==self) log.info(s"New paxos leader.")
       if (n > nL) {
         leader = Some(l)
         nL = n
@@ -174,9 +170,11 @@ class SequencePaxos() extends ComponentDefinition {
   sc uponEvent {
     case SC_Propose(c) => {
       if (state == (LEADER, PREPARE)) {
+        log.info(s"Leader in prepare state adds $c to propCmds.")
         propCmds = propCmds ++ List(c)
       }
       else if (state == (LEADER, ACCEPT)) {
+        log.info(s"Leader in accept state accepts $c.")
         va = va ++ List(c)
         las += (self -> (las(self) + 1))
         for (p <- lds.keys) {
