@@ -60,7 +60,7 @@ class SequencePaxos() extends ComponentDefinition {
 
   ble uponEvent {
     case BLE_Leader(l, n) => {
-      if (l==self) log.info(s"New paxos leader.")
+      if (l==self) log.info(s"New Paxos leader.")
       if (n > nL) {
         leader = Some(l)
         nL = n
@@ -93,6 +93,7 @@ class SequencePaxos() extends ComponentDefinition {
         if (na >= n) {
           sfx = suffix(va, ldp)
         }
+        log.debug(s"Received a valid Prepare message from ${header.src} and responding with Promise.")
         trigger(NetMessage(self, header.src, Promise(np, na, sfx, ld)) -> net)
       }
     }
@@ -102,6 +103,7 @@ class SequencePaxos() extends ComponentDefinition {
         acks += (a -> (na, sfxa))
         lds += (a -> lda)
         if (acks.size >= majority) {
+          log.debug(s"Received Promises from majority.")
           var (k, sfx) = acks.values.reduce((ack1, ack2) => {
             if (ack1._1 == ack2._1) {
               if (ack1._2.size >= ack2._2.size) ack1 else ack2
@@ -148,6 +150,7 @@ class SequencePaxos() extends ComponentDefinition {
     case NetMessage(_, Decide(l, nL)) => {
       if (nProm == nL) {
         while (ld < l) {
+          log.debug(s"Deciding ${va(ld)}")
           trigger(SC_Decide(va(ld)) -> sc)
           ld += 1
         }
@@ -158,6 +161,7 @@ class SequencePaxos() extends ComponentDefinition {
         las += (header.src -> m)
         val count = las.values.count(_ >= m)
         if (lc < m && count >= majority) {
+          log.debug(s"Received Accepted from majority.")
           lc = m
           for (p <- lds.keys) {
             trigger(NetMessage(self, p, Decide(lc, nL)) -> net)
