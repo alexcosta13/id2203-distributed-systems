@@ -72,12 +72,13 @@ class VSOverlayManager extends ComponentDefinition {
   net uponEvent {
     case NetMessage(header, RouteMsg(key, msg)) => {
       val nodes = lut.get.lookup(key)
-      assert(!nodes.isEmpty)
-      val i = Random.nextInt(nodes.size)
-      val target = nodes.drop(i).head
-      log.info(s"Forwarding message for key $key to $target");
-      trigger(NetMessage(header.src, target, msg) -> net)
+      assert(nodes.nonEmpty)
+      for(node <- nodes) {
+        log.info(s"Forwarding message for key $key to $node");
+        trigger(NetMessage(header.src, node, msg) -> net)
+      }
     }
+
     case NetMessage(header, msg: Connect) => {
       lut match {
         case Some(l) => {
@@ -93,7 +94,7 @@ class VSOverlayManager extends ComponentDefinition {
   route uponEvent {
     case RouteMsg(key, msg) => {
       val nodes = lut.get.lookup(key)
-      assert(!nodes.isEmpty)
+      assert(nodes.nonEmpty)
       val i = Random.nextInt(nodes.size)
       val target = nodes.drop(i).head
       log.info(s"Routing message for key $key to $target")
