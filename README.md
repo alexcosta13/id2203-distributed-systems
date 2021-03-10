@@ -17,8 +17,6 @@ You are encouraged to create your own forks and work on them, modifying everythi
 - [x] Server CAS implementation
 - [ ] Test CAS and linearizability
 
-
-- [ ] Log consensus
 - [ ] Filter responses from just one server
 
 ## Overview

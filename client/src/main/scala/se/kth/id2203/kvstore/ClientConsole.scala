@@ -79,7 +79,11 @@ class ClientConsole(val service: ClientService) extends CommandConsole with Pars
     out.println("Operation sent! Awaiting response...")
     try {
       val r = Await.result(fr, 5.seconds)
-      out.println("Operation complete! Response was: " + r.status)
+      if (r.status == OpCode.Ok) {
+        out.println("Operation complete! Response was: " + r.value)
+      } else {
+        out.println("Operation complete! Response was: " + r.status)
+      }
     } catch {
       case e: Throwable => logger.error("Error during op.", e);
     }
