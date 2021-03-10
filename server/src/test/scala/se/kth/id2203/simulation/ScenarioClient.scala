@@ -21,48 +21,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.kth.id2203.simulation;
+package se.kth.id2203.simulation
 
-import java.util.UUID;
-import se.kth.id2203.kvstore._;
-import se.kth.id2203.networking._;
-import se.kth.id2203.overlay.RouteMsg;
+import java.util.UUID
+import se.kth.id2203.kvstore._
+import se.kth.id2203.networking._
+import se.kth.id2203.overlay.RouteMsg
 import se.sics.kompics.sl._
-import se.sics.kompics.Start;
-import se.sics.kompics.network.Network;
-import se.sics.kompics.timer.Timer;
-import se.sics.kompics.sl.simulator.SimulationResult;
-import collection.mutable;
+import se.sics.kompics.Start
+import se.sics.kompics.network.Network
+import se.sics.kompics.timer.Timer
+import se.sics.kompics.sl.simulator.SimulationResult
+import collection.mutable
 
 class ScenarioClient extends ComponentDefinition {
 
   //******* Ports ******
-  val net = requires[Network];
-  val timer = requires[Timer];
+  val net: PositivePort[Network] = requires[Network]
+  val timer: PositivePort[Timer] = requires[Timer]
+
   //******* Fields ******
-  val self = cfg.getValue[NetAddress]("id2203.project.address");
-  val server = cfg.getValue[NetAddress]("id2203.project.bootstrap-address");
-  private val pending = mutable.Map.empty[UUID, String];
+  val self: NetAddress = cfg.getValue[NetAddress]("id2203.project.address")
+  val server: NetAddress = cfg.getValue[NetAddress]("id2203.project.bootstrap-address")
+  private val pending = mutable.Map.empty[UUID, String]
+
   //******* Handlers ******
   ctrl uponEvent {
     case _: Start => {
-      val messages = SimulationResult[Int]("messages");
+      val messages = SimulationResult[Int]("messages")
       for (i <- 0 to messages) {
-        val op = new Get(s"test$i");
+        val op = new Get(s"test$i")
         val routeMsg = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
-        trigger(NetMessage(self, server, routeMsg) -> net);
-        pending += (op.id -> op.key);
-        logger.info("Sending {}", op);
-        SimulationResult += (op.key -> "Sent");
+        trigger(NetMessage(self, server, routeMsg) -> net)
+        pending += (op.id -> op.key)
+        logger.info("Sending {}", op)
+        SimulationResult += (op.key -> "Sent")
       }
     }
   }
 
   net uponEvent {
     case NetMessage(header, or @ OpResponse(id, status, _)) => {
-      logger.debug(s"Got OpResponse: $or");
+      logger.debug(s"Got OpResponse: $or")
       pending.remove(id) match {
-        case Some(key) => SimulationResult += (key -> status.toString());
+        case Some(key) => SimulationResult += (key -> status.toString())
         case None      => logger.warn("ID $id was not pending! Ignoring response.");
       }
     }
