@@ -52,14 +52,14 @@ class KVService extends ComponentDefinition {
 
   net uponEvent {
     case NetMessage(header, op: Operation) => {
-      log.info(s"Proposing $op.")
+      log.info("Got operation {}!", op)
       trigger(SC_Propose(RSM_Command(header.src, op)) -> consensus)
     }
   }
 
   consensus uponEvent {
     case SC_Decide(RSM_Command(client, op @ Get(key, _))) => {
-      log.info(s"Operation $op decided.")
+      log.info(s"Operation GET($key) decided.")
       if (data.contains(key)) {
         val value = data(key)
         trigger(NetMessage(self, client, op.response(OpCode.Ok, value)) -> net)
@@ -68,12 +68,18 @@ class KVService extends ComponentDefinition {
       }
     }
     case SC_Decide(RSM_Command(client, op @ Put(key, value, _))) => {
-      log.info(s"Operation $op decided.")
+      log.info(s"Operation PUT($key -> $value) decided.")
       data += (key -> value)
       trigger(NetMessage(self, client, op.response(OpCode.Ok)) -> net)
     }
     case SC_Decide(RSM_Command(client, op @ Cas(key, refValue, newValue, _))) => {
-      log.info(s"Operation $op decided.")
+      log.info(s"Operation CAS($key -> $newValue) if ($key -> $refValue) decided.")
+      if (data.contains(key) && data(key).equals(refValue)) {
+        data += (key -> newValue)
+        trigger(NetMessage(self, client, op.response(OpCode.Ok)) -> net)
+      } else {
+        trigger(NetMessage(self, client, op.response(OpCode.NotFound)) -> net)
+      }
     }
   }
 

@@ -50,7 +50,7 @@ case class Put(key: String, value: String, id: UUID = UUID.randomUUID()) extends
 @SerialVersionUID(-374812437823538710L)
 case class Cas(key: String, refValue: String, newValue: String, id: UUID = UUID.randomUUID()) extends Operation with Serializable {
   def response(status: OpCode.OpCode): OpResponse = OpResponse(id, status)
-  def response(status: OpCode.OpCode, refValue: String): OpResponse = OpResponse(id, status, refValue)
+  // def response(status: OpCode.OpCode, refValue: String): OpResponse = OpResponse(id, status, refValue)
 }
 
 object OpCode {
