@@ -23,7 +23,7 @@
  */
 package se.kth.id2203.kvstore
 
-import se.kth.id2203.consensus.SequenceConsensus
+import se.kth.id2203.consensus.{RSM_Command, SC_Decide, SC_Propose, SequenceConsensus}
 import se.kth.id2203.networking._
 import se.kth.id2203.overlay.Routing
 import se.sics.kompics.sl._
@@ -43,7 +43,41 @@ class KVService extends ComponentDefinition {
   var data: mutable.Map[String, String] = mutable.HashMap[String, String]()
 
   //******* Handlers ******
+  ctrl uponEvent {
+    case _: Start =>  {
+      data += ("a" -> "alex")
+      data += ("d" -> "dani")
+    }
+  }
+
   net uponEvent {
+    case NetMessage(header, op: Operation) => {
+      log.info(s"Proposing $op.")
+      trigger(SC_Propose(RSM_Command(header.src, op)) -> consensus)
+    }
+  }
+
+  consensus uponEvent {
+    case SC_Decide(RSM_Command(client, op @ Get(key, _))) => {
+      log.info(s"Operation $op decided.")
+      if (data.contains(key)) {
+        val value = data(key)
+        trigger(NetMessage(self, client, op.response(OpCode.Ok, value)) -> net)
+      } else {
+        trigger(NetMessage(self, client, op.response(OpCode.NotFound)) -> net)
+      }
+    }
+    case SC_Decide(RSM_Command(client, op @ Put(key, value, _))) => {
+      log.info(s"Operation $op decided.")
+      data += (key -> value)
+      trigger(NetMessage(self, client, op.response(OpCode.Ok)) -> net)
+    }
+    case SC_Decide(RSM_Command(client, op @ Cas(key, refValue, newValue, _))) => {
+      log.info(s"Operation $op decided.")
+    }
+  }
+
+/*  net uponEvent {
     case NetMessage(header, op @ Get(key, _)) => {
       log.info("Got operation {}! Now implement me please :)", op)
       trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net)
@@ -56,5 +90,5 @@ class KVService extends ComponentDefinition {
       log.info("Got operation {}! Now implement me please :)", op)
       trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net)
     }
-  }
+  }*/
 }

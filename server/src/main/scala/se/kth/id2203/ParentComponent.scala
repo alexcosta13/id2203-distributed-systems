@@ -65,7 +65,7 @@ class ParentComponent extends ComponentDefinition {
     // KV
     connect(Routing)(overlay -> kv)
     connect[Network](net -> kv)
-    // connect(SequenceConsensus)(sc -> kv)
+    connect(SequenceConsensus)(sc -> kv)
     // BLE
     connect[Timer](timer -> ble)
     connect[Network](net -> ble)
