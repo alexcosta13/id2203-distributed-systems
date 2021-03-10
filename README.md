@@ -8,18 +8,18 @@ You are encouraged to create your own forks and work on them, modifying everythi
 - [x] Provide topology from VSOverlayManager
 - [x] Ballot Leader Election
 - [x] Sequence Consensus
-- [ ] Server GET implementation
+- [x] Server GET implementation
 - [ ] Test GET and linearizability
 - [x] Client PUT implementation
-- [ ] Server PUT implementation
+- [x] Server PUT implementation
 - [ ] Test PUT and linearizability
 - [x] Client CAS implementation
-- [ ] Server CAS implementation
+- [x] Server CAS implementation
 - [ ] Test CAS and linearizability
 
 
 - [ ] Log consensus
-- [ ] Implement FIFOpl?
+- [ ] Filter responses from just one server
 
 ## Overview
 
