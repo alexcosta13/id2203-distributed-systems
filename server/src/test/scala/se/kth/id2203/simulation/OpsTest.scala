@@ -62,19 +62,94 @@ class OpsTest extends FlatSpec with Matchers {
   //    }
   //  }
 
-  "Simple Operations" should "not be implemented" in { // well of course eventually they should be implemented^^
+  "Empty Get operation" should "return NotFound" in { // well of course eventually they should be implemented^^
     val seed = 123L
     JSimulationScenario.setSeed(seed)
     val simpleBootScenario = SimpleScenario.scenario(3)
     val res = SimulationResultSingleton.getInstance()
     SimulationResult += ("messages" -> nMessages)
+    SimulationResult += ("operation" -> "Get")
+    SimulationResult += ("keyExists" -> false)
     simpleBootScenario.simulate(classOf[LauncherComp])
     for (i <- 0 to nMessages) {
-      SimulationResult.get[String](s"test$i") should be (Some("NotFound"))
-      // of course the correct response should be Success not NotImplemented, but like this the test passes
+      SimulationResult.get[String](s"statustest$i") should be (Some("NotFound"))
     }
   }
 
+  "Simple Put operation" should "be implemented" in { // well of course eventually they should be implemented^^
+    val seed = 123L
+    JSimulationScenario.setSeed(seed)
+    val simpleBootScenario = SimpleScenario.scenario(3)
+    val res = SimulationResultSingleton.getInstance()
+    SimulationResult += ("messages" -> nMessages)
+    SimulationResult += ("operation" -> "Put")
+    simpleBootScenario.simulate(classOf[LauncherComp])
+    for (i <- 0 to nMessages) {
+      SimulationResult.get[String](s"statustest$i") should be (Some("Ok"))
+    }
+  }
+
+  "Simple Get operation" should "be implemented" in { // well of course eventually they should be implemented^^
+    val seed = 123L
+    JSimulationScenario.setSeed(seed)
+    val simpleBootScenario = SimpleScenario.scenario(3)
+    val res = SimulationResultSingleton.getInstance()
+    SimulationResult += ("messages" -> nMessages)
+    SimulationResult += ("operation" -> "Get")
+    SimulationResult += ("keyExists" -> true)
+    simpleBootScenario.simulate(classOf[LauncherComp])
+    for (i <- 0 to nMessages) {
+      SimulationResult.get[String](s"statustest$i") should be (Some("Ok"))
+      SimulationResult.get[String](s"valuetest$i") should be (Some(s"value$i"))
+    }
+  }
+
+  "Empty Cas operation" should "return NotFound" in { // well of course eventually they should be implemented^^
+    val seed = 123L
+    JSimulationScenario.setSeed(seed)
+    val simpleBootScenario = SimpleScenario.scenario(3)
+    val res = SimulationResultSingleton.getInstance()
+    SimulationResult += ("messages" -> nMessages)
+    SimulationResult += ("operation" -> "Cas")
+    SimulationResult += ("keyExists" -> false)
+    SimulationResult += ("keyMatches" -> false)
+    simpleBootScenario.simulate(classOf[LauncherComp])
+    for (i <- 0 to nMessages) {
+      SimulationResult.get[String](s"statustest$i") should be (Some("NotFound"))
+    }
+  }
+
+  "Simple Cas operation" should "be implemented" in { // well of course eventually they should be implemented^^
+    val seed = 123L
+    JSimulationScenario.setSeed(seed)
+    val simpleBootScenario = SimpleScenario.scenario(3)
+    val res = SimulationResultSingleton.getInstance()
+    SimulationResult += ("messages" -> nMessages)
+    SimulationResult += ("operation" -> "Cas")
+    SimulationResult += ("keyExists" -> true)
+    SimulationResult += ("keyMatches" -> true)
+    simpleBootScenario.simulate(classOf[LauncherComp])
+    for (i <- 0 to nMessages) {
+      SimulationResult.get[String](s"statustest$i") should be (Some("Ok"))
+      SimulationResult.get[String](s"valuetest$i") should be (Some(s"newValue$i"))
+    }
+  }
+
+  "Cas operation - key not matching" should "not update" in { // well of course eventually they should be implemented^^
+    val seed = 123L
+    JSimulationScenario.setSeed(seed)
+    val simpleBootScenario = SimpleScenario.scenario(3)
+    val res = SimulationResultSingleton.getInstance()
+    SimulationResult += ("messages" -> nMessages)
+    SimulationResult += ("operation" -> "Cas")
+    SimulationResult += ("keyExists" -> true)
+    SimulationResult += ("keyMatches" -> false)
+    simpleBootScenario.simulate(classOf[LauncherComp])
+    for (i <- 0 to nMessages) {
+      SimulationResult.get[String](s"statustest$i") should be (Some("Ok"))
+      SimulationResult.get[String](s"valuetest$i") should be (Some(s"value$i"))
+    }
+  }
 }
 
 object SimpleScenario {
@@ -123,16 +198,19 @@ object SimpleScenario {
       "id2203.project.address" -> selfAddr,
       "id2203.project.bootstrap-address" -> intToServerAddress(1))
     StartNode(selfAddr, Init.none[ScenarioClient], conf);
-  };
+  }
 
   def scenario(servers: Int): JSimulationScenario = {
 
-    val networkSetup = raise(1, setUniformLatencyNetwork()).arrival(constant(0))
+    // val networkSetup = raise(1, setUniformLatencyNetwork()).arrival(constant(0))
     val startCluster = raise(servers, startServerOp, 1.toN).arrival(constant(1.second))
     val startClients = raise(1, startClientOp, 1.toN).arrival(constant(1.second))
 
-    networkSetup andThen
+    /* networkSetup andThen
       0.seconds afterTermination startCluster andThen
+      10.seconds afterTermination startClients andThen
+      100.seconds afterTermination Terminate */
+    startCluster andThen
       10.seconds afterTermination startClients andThen
       100.seconds afterTermination Terminate
   }

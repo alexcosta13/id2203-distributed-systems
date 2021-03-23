@@ -45,26 +45,70 @@ class ScenarioClient extends ComponentDefinition {
   val server: NetAddress = cfg.getValue[NetAddress]("id2203.project.bootstrap-address")
   private val pending = mutable.Map.empty[UUID, String]
 
+  //******* Functions ******
+  def get(messages: Int): Unit = {
+    for (i <- 0 to messages) {
+      val op = new Get(s"test$i")
+      val routeMsg = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
+      trigger(NetMessage(self, server, routeMsg) -> net)
+      pending += (op.id -> op.key)
+      logger.info("Sending {}", op)
+      SimulationResult += (op.key -> "Sent")
+    }
+  }
+
+  def put(messages: Int): Unit = {
+    for (i <- 0 to messages) {
+      val op = new Put(s"test$i", s"value$i")
+      val routeMsg = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
+      trigger(NetMessage(self, server, routeMsg) -> net)
+      pending += (op.id -> op.key)
+      logger.info("Sending {}", op)
+      SimulationResult += (op.key -> "Sent")
+    }
+  }
+
+  def cas(messages: Int, matchingKey: Boolean): Unit = {
+    for (i <- 0 to messages) {
+      val op = if (matchingKey) new Cas(s"test$i", s"value$i", s"newValue$i")
+      else new Cas(s"test$i", s"v$i", s"newValue$i")
+
+      val routeMsg = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
+      trigger(NetMessage(self, server, routeMsg) -> net)
+      pending += (op.id -> op.key)
+      logger.info("Sending {}", op)
+      SimulationResult += (op.key -> "Sent")
+    }
+  }
+
   //******* Handlers ******
   ctrl uponEvent {
     case _: Start => {
       val messages = SimulationResult[Int]("messages")
-      for (i <- 0 to messages) {
-        val op = new Get(s"test$i")
-        val routeMsg = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
-        trigger(NetMessage(self, server, routeMsg) -> net)
-        pending += (op.id -> op.key)
-        logger.info("Sending {}", op)
-        SimulationResult += (op.key -> "Sent")
-      }
+      SimulationResult[String]("operation") match {
+         case "Get" => {
+           if (SimulationResult[Boolean]("keyExists")) put(messages)
+           get(messages)
+         }
+         case "Put" => {
+           put(messages)
+         }
+         case "Cas" => {
+           if (SimulationResult[Boolean]("keyExists")) put(messages)
+           cas(messages, SimulationResult[Boolean]("keyMatches"))
+           get(messages)
+         }
+       }
     }
   }
 
   net uponEvent {
-    case NetMessage(header, or @ OpResponse(id, status, _)) => {
+    case NetMessage(header, or @ OpResponse(id, status, value)) => {
       logger.debug(s"Got OpResponse: $or")
       pending.remove(id) match {
-        case Some(key) => SimulationResult += (key -> status.toString())
+        case Some(key) =>
+          SimulationResult += (s"status$key" -> status.toString())
+          SimulationResult += (s"value$key" -> value)
         case None      => logger.warn("ID $id was not pending! Ignoring response.");
       }
     }
