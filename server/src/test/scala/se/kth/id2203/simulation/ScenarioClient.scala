@@ -48,37 +48,30 @@ class ScenarioClient extends ComponentDefinition {
   //******* Functions ******
   def get(messages: Int): Unit = {
     for (i <- 0 to messages) {
-      val op = new Get(s"test$i")
-      val routeMsg = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
-      trigger(NetMessage(self, server, routeMsg) -> net)
-      pending += (op.id -> op.key)
-      logger.info("Sending {}", op)
-      SimulationResult += (op.key -> "Sent")
+      send(Get(s"test$i"))
     }
   }
 
   def put(messages: Int): Unit = {
     for (i <- 0 to messages) {
-      val op = new Put(s"test$i", s"value$i")
-      val routeMsg = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
-      trigger(NetMessage(self, server, routeMsg) -> net)
-      pending += (op.id -> op.key)
-      logger.info("Sending {}", op)
-      SimulationResult += (op.key -> "Sent")
+      send(Put(s"test$i", s"value$i"))
     }
   }
 
   def cas(messages: Int, matchingKey: Boolean): Unit = {
     for (i <- 0 to messages) {
-      val op = if (matchingKey) new Cas(s"test$i", s"value$i", s"newValue$i")
-      else new Cas(s"test$i", s"v$i", s"newValue$i")
-
-      val routeMsg = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
-      trigger(NetMessage(self, server, routeMsg) -> net)
-      pending += (op.id -> op.key)
-      logger.info("Sending {}", op)
-      SimulationResult += (op.key -> "Sent")
+      val op = if (matchingKey) Cas(s"test$i", s"value$i", s"newValue$i")
+      else Cas(s"test$i", s"v$i", s"newValue$i")
+      send(op)
     }
+  }
+
+  def send(op: Operation): Unit = {
+    val routeMsg = RouteMsg(op.key, op); // don't know which partition is responsible, so ask the bootstrap server to forward it
+    trigger(NetMessage(self, server, routeMsg) -> net)
+    pending += (op.id -> op.key)
+    logger.info("Sending {}", op)
+    SimulationResult += (op.key -> "Sent")
   }
 
   //******* Handlers ******
