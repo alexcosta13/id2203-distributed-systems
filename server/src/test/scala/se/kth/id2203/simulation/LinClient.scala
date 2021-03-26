@@ -96,7 +96,7 @@ class LinClient extends ComponentDefinition {
       case op @ Cas(key, refValue, newValue, _) => {
         if (S.contains(key) && S(key).equals(refValue)) {
           S += (key -> newValue)
-          op.response(OpCode.Ok)
+          op.response(OpCode.Ok, refValue)
         } else {
           op.response(OpCode.NotFound)
         }

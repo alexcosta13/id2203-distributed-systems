@@ -35,7 +35,7 @@ class KVService extends ComponentDefinition {
 
   //******* Ports ******
   val net: PositivePort[Network] = requires[Network]
-  val route: PositivePort[Routing.type] = requires(Routing)
+  val route: PositivePort[Routing.type] = requires(Routing) // needed for partitioning
   val consensus: PositivePort[SequenceConsensus.type] = requires(SequenceConsensus)
 
   //******* Fields ******
@@ -45,8 +45,6 @@ class KVService extends ComponentDefinition {
   //******* Handlers ******
   ctrl uponEvent {
     case _: Start =>  {
-      data += ("a" -> "alex")
-      data += ("d" -> "dani")
     }
   }
 
@@ -75,28 +73,13 @@ class KVService extends ComponentDefinition {
     }
 
     case SC_Decide(RSM_Command(header, op @ Cas(key, refValue, newValue, _))) => {
-      log.info(s"Operation CAS($key -> $newValue) if ($key -> $refValue) decided.")
+      log.info(s"Operation CAS(($key -> $newValue) if ($key -> $refValue)) decided.")
       if (data.contains(key) && data(key).equals(refValue)) {
         data += (key -> newValue)
-        if(header.dst == self) trigger(NetMessage(self, header.src, op.response(OpCode.Ok)) -> net)
+        if(header.dst == self) trigger(NetMessage(self, header.src, op.response(OpCode.Ok, refValue)) -> net)
       } else {
         if(header.dst == self) trigger(NetMessage(self, header.src, op.response(OpCode.NotFound)) -> net)
       }
     }
   }
-
-/*  net uponEvent {
-    case NetMessage(header, op @ Get(key, _)) => {
-      log.info("Got operation {}! Now implement me please :)", op)
-      trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net)
-    }
-    case NetMessage(header, op @ Put(key, value, _)) => {
-      log.info("Got operation {}! Now implement me please :)", op)
-      trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net)
-    }
-    case NetMessage(header, op @ Cas(key, refValue, newValue, _)) => {
-      log.info("Got operation {}! Now implement me please :)", op)
-      trigger(NetMessage(self, header.src, op.response(OpCode.NotImplemented)) -> net)
-    }
-  }*/
 }

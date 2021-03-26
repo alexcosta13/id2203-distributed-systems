@@ -9,7 +9,7 @@ import se.sics.kompics.simulator.result.SimulationResultSingleton
 
 class LinTest extends FlatSpec with Matchers {
 
-  "Operations" should "be linearizable" in {
+  "R/W operations" should "be linearizable" in {
     val seed = 123L
     JSimulationScenario.setSeed(seed)
     val simpleBootScenario = LinScenario.scenario(3)

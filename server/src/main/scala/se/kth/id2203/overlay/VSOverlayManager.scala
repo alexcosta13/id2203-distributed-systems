@@ -43,7 +43,7 @@ import util.Random;
 class VSOverlayManager extends ComponentDefinition {
 
   //******* Ports ******
-  val route: NegativePort[Routing.type] = provides(Routing)
+  val route: NegativePort[Routing.type] = provides(Routing) // needed for partitioning
   val boot: PositivePort[Bootstrapping.type] = requires(Bootstrapping)
   val net: PositivePort[Network] = requires[Network]
   val timer: PositivePort[Timer] = requires[Timer]
