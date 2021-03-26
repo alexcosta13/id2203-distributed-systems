@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.kth.id2203;
+package se.kth.id2203
 
 import se.kth.id2203.ballotleaderelection.{BallotLeaderElection, GossipLeaderElection}
 import se.kth.id2203.bootstrapping._
@@ -32,7 +32,7 @@ import se.kth.id2203.overlay._
 import se.sics.kompics.sl._
 import se.sics.kompics.{Component, Init}
 import se.sics.kompics.network.Network
-import se.sics.kompics.timer.Timer;
+import se.sics.kompics.timer.Timer
 
 /**
  * Creates components and connects them:
@@ -63,7 +63,7 @@ class ParentComponent extends ComponentDefinition {
     connect(Bootstrapping)(boot -> overlay)
     connect[Network](net -> overlay)
     // KV
-    connect(Routing)(overlay -> kv)
+    //connect(Routing)(overlay -> kv)
     connect[Network](net -> kv)
     connect(SequenceConsensus)(sc -> kv)
     // BLE
