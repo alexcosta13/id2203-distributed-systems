@@ -21,45 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.kth.id2203.bootstrapping;
+package se.kth.id2203.bootstrapping
 
-import java.util.UUID;
-import se.kth.id2203.networking._;
-import se.sics.kompics.sl._;
-import se.sics.kompics.Start;
-import se.sics.kompics.network.Network;
-import se.sics.kompics.timer._;
+import java.util.UUID
+import se.kth.id2203.networking._
+import se.sics.kompics.sl._
+import se.sics.kompics.Start
+import se.sics.kompics.network.Network
+import se.sics.kompics.timer._
 
 object BootstrapClient {
   sealed trait State;
-  case object Waiting extends State;
-  case object Started extends State;
+  case object Waiting extends State
+  case object Started extends State
 }
 
 class BootstrapClient extends ComponentDefinition {
-  import BootstrapClient._;
+  import BootstrapClient._
 
   //******* Ports ******
-  val bootstrap = provides(Bootstrapping);
-  val timer = requires[Timer];
-  val net = requires[Network];
+  val bootstrap: NegativePort[Bootstrapping.type] = provides(Bootstrapping)
+  val timer: PositivePort[Timer] = requires[Timer]
+  val net: PositivePort[Network] = requires[Network]
   //******* Fields ******
-  val self = cfg.getValue[NetAddress]("id2203.project.address");
-  val server = cfg.getValue[NetAddress]("id2203.project.bootstrap-address");
+  val self: NetAddress = cfg.getValue[NetAddress]("id2203.project.address")
+  val server: NetAddress = cfg.getValue[NetAddress]("id2203.project.bootstrap-address")
 
-  private var state: State = Waiting;
+  private var state: State = Waiting
 
-  private var timeoutId: Option[UUID] = None;
+  private var timeoutId: Option[UUID] = None
 
   //******* Handlers ******
   ctrl uponEvent {
     case _: Start => {
-      log.debug("Starting bootstrap client on {}", self);
-      val timeout: Long = cfg.getValue[Long]("id2203.project.keepAlivePeriod");
-      val spt = new SchedulePeriodicTimeout(timeout, timeout);
-      spt.setTimeoutEvent(BSTimeout(spt));
-      trigger(spt -> timer);
-      timeoutId = Some(spt.getTimeoutEvent().getTimeoutId());
+      log.debug("Starting bootstrap client on {}", self)
+      val timeout: Long = cfg.getValue[Long]("id2203.project.keepAlivePeriod")
+      val spt = new SchedulePeriodicTimeout(timeout, timeout)
+      spt.setTimeoutEvent(BSTimeout(spt))
+      trigger(spt -> timer)
+      timeoutId = Some(spt.getTimeoutEvent().getTimeoutId())
     }
   }
 
@@ -67,11 +67,11 @@ class BootstrapClient extends ComponentDefinition {
     case BSTimeout(_) => {
       state match {
         case Waiting => {
-          trigger(NetMessage(self, server, CheckIn) -> net);
+          trigger(NetMessage(self, server, CheckIn) -> net)
         }
         case Started => {
-          trigger(NetMessage(self, server, Ready) -> net);
-          suicide();
+          trigger(NetMessage(self, server, Ready) -> net)
+          suicide()
         }
       }
     }
@@ -81,14 +81,14 @@ class BootstrapClient extends ComponentDefinition {
     case NetMessage(header, Boot(assignment)) => {
       state match {
         case Waiting => {
-          log.info("{} Booting up.", self);
-          trigger(Booted(assignment) -> bootstrap);
+          log.info("{} Booting up.", self)
+          trigger(Booted(assignment) -> bootstrap)
           timeoutId match {
             case Some(tid) => trigger(new CancelPeriodicTimeout(tid) -> timer);
             case None      => // nothing to cancel
           }
-          trigger(NetMessage(self, server, Ready) -> net);
-          state = Started;
+          trigger(NetMessage(self, server, Ready) -> net)
+          state = Started
         }
         case _ => // ignore
       }
